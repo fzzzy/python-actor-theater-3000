@@ -1,0 +1,21 @@
+"""Parent actor that spawns child actors and sends them messages."""
+
+
+async def main(_recv, spawn, print):
+    """Actor main function - spawns children and sends messages."""
+    print("Parent starting, spawning 10 children...")
+
+    child_casts = []
+    for i in range(10):
+        cast = spawn("actor_child.pya")
+        child_casts.append(cast)
+        print(f"Spawned child {i}")
+
+    print("Parent sending messages to children...")
+
+    for i, cast in enumerate(child_casts):
+        for j in range(10):
+            cast(f"msg_{j}")
+        print(f"Sent 10 messages to child {i}")
+
+    print("Parent finished")

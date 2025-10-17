@@ -1,0 +1,10 @@
+"""Child actor that counts to 10."""
+
+
+async def main(recv, _spawn, print):
+    """Actor main function - receives messages and counts."""
+    for ping_count in range(1, 11):
+        msg = await recv()
+        print(f"received: {msg}, ping_count={ping_count}")
+
+    print("Child finished")
