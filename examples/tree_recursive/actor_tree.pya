@@ -1,0 +1,30 @@
+"""Actor that spawns 2 children recursively to create a binary tree."""
+
+async def main(recv, spawn, print):
+    """Spawn 2 children if not at max depth."""
+    print("Actor started, waiting for depth message...")
+
+    # Receive depth from parent (or 0 for root)
+    msg = await recv()
+    print(f"Received message: {msg}")
+
+    depth = msg['depth']
+    max_depth = msg['max_depth']
+
+    print(f"Actor at depth {depth}")
+
+    if depth < max_depth:
+        print(f"Spawning 2 children at depth {depth + 1}")
+
+        child1 = spawn("actor_tree.pya")
+        child2 = spawn("actor_tree.pya")
+
+        # Tell children their depth
+        child1({'depth': depth + 1, 'max_depth': max_depth})
+        child2({'depth': depth + 1, 'max_depth': max_depth})
+
+        print(f"Spawned 2 children from depth {depth}")
+    else:
+        print(f"Leaf node at depth {depth} (max depth reached)")
+
+    print(f"Actor at depth {depth} finished")

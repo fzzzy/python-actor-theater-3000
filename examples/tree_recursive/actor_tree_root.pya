@@ -1,0 +1,13 @@
+"""Root actor that starts the binary tree spawn."""
+
+async def main(_recv, spawn, print):
+    """Start the tree at depth 0."""
+    print("=== Starting binary tree spawn test ===")
+    print("Creating root actor (depth 0, max_depth 2)")
+    print("Expected actors: 1 + 2 + 4 = 7 total\n")
+
+    root = spawn("actor_tree.pya")
+    root({'depth': 0, 'max_depth': 2})
+
+    print("Root spawned")
+    print("\n=== Tree spawn test complete ===")

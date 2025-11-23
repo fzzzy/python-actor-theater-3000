@@ -1,0 +1,8 @@
+"""Simple child actor that receives 1 message."""
+
+async def main(recv, _spawn, print):
+    """Actor main function - receives 1 message."""
+    msg = await recv()
+    print(f"received message: {msg}")
+
+    print("Child finished")

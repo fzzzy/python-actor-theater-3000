@@ -1,0 +1,8 @@
+"""Leaf actor - receives one message and finishes."""
+
+async def main(recv, _spawn, print):
+    """Leaf actor that receives a message and exits."""
+    print("LEAF started, waiting for message...")
+    msg = await recv()
+    print(f"LEAF received: {msg}")
+    print("LEAF finished")

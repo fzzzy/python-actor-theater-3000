@@ -1,0 +1,6 @@
+"""Leaf actor - just prints and finishes."""
+
+async def main(_recv, _spawn, print):
+    """Leaf actor that just prints and exits."""
+    print("LEAF started")
+    print("LEAF finished")

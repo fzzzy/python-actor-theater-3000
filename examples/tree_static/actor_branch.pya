@@ -1,0 +1,11 @@
+"""Branch actor - spawns 2 leaves."""
+
+async def main(_recv, spawn, print):
+    """Branch that spawns 2 leaf actors."""
+    print("BRANCH started")
+    print("BRANCH spawning 2 leaves...")
+
+    leaf1 = spawn("actor_leaf.pya")
+    leaf2 = spawn("actor_leaf.pya")
+
+    print("BRANCH finished spawning")

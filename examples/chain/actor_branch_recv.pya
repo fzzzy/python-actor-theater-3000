@@ -1,0 +1,15 @@
+"""Branch actor - receives one message, spawns 1 leaf, sends 1 message."""
+
+async def main(recv, spawn, print):
+    """Branch that receives message, spawns 1 leaf, and sends message."""
+    print("BRANCH started, waiting for message...")
+    msg = await recv()
+    print(f"BRANCH received: {msg}")
+
+    print("BRANCH spawning 1 leaf...")
+    leaf = spawn("actor_leaf_recv.pya")
+
+    print("BRANCH sending message to leaf...")
+    leaf(f"hello from branch (got: {msg})")
+
+    print("BRANCH finished")

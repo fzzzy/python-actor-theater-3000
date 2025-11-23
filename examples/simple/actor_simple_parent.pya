@@ -1,0 +1,12 @@
+"""Simple parent that spawns 1 child and sends 1 message."""
+
+async def main(_recv, spawn, print):
+    """Actor main function - spawns 1 child and sends 1 message."""
+    print("Parent starting, spawning child...")
+
+    child_cast = spawn("actor_simple_child.pya")
+
+    print("Parent sending message...")
+    child_cast("hello")
+
+    print("Parent finished")

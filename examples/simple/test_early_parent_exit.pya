@@ -1,0 +1,12 @@
+"""Test parent that exits immediately after spawning and sending messages."""
+
+async def main(_recv, spawn, print):
+    """Parent that doesn't wait - tests deferred cleanup."""
+    print("Parent spawning child and sending message...")
+
+    child_cast = spawn("actor_simple_child.pya")
+    child_cast("hello from early-exit parent")
+
+    print("Parent exiting immediately (no sleep)")
+    # No sleep - parent exits right away
+    # With deferred cleanup, child should still receive the message

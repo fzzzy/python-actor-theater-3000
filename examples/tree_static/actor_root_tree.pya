@@ -1,0 +1,12 @@
+"""Root actor - spawns 2 branches."""
+
+async def main(_recv, spawn, print):
+    """Root that spawns 2 branch actors."""
+    print("=== ROOT starting ===")
+    print("ROOT spawning 2 branches...")
+
+    branch1 = spawn("actor_branch.pya")
+    branch2 = spawn("actor_branch.pya")
+
+    print("ROOT finished spawning")
+    print("=== ROOT finished ===")
