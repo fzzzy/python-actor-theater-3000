@@ -28,7 +28,10 @@ def test_tree_recursive_structure(capsys):
     assert output.count("finished") >= 7  # At least 7 tree actors finish
 
     assert "Starting actor system" in output
-    assert "Spawning initial parent actor: examples/tree_recursive/actor_tree_root.pya" in output
+    assert (
+        "Spawning initial parent actor: examples/tree_recursive/actor_tree_root.pya"
+        in output
+    )
     assert "[System] All actors completed!" in output
     assert "[System] Cleanup complete!" in output
 
@@ -58,7 +61,11 @@ def test_tree_recursive_message_passing(capsys):
     assert "Received message:" in output
 
     assert "'depth': 0" in output or "depth: 0" in output or "depth=0" in output
-    assert "'max_depth': 2" in output or "max_depth: 2" in output or "max_depth=2" in output
+    assert (
+        "'max_depth': 2" in output
+        or "max_depth: 2" in output
+        or "max_depth=2" in output
+    )
 
 
 def test_tree_recursive_completion(capsys):

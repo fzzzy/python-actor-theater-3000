@@ -26,7 +26,10 @@ def test_tree_static_structure(capsys):
     assert output.count("LEAF finished") == 4
 
     assert "Starting actor system" in output
-    assert "Spawning initial parent actor: examples/tree_static/actor_root_tree.pya" in output
+    assert (
+        "Spawning initial parent actor: examples/tree_static/actor_root_tree.pya"
+        in output
+    )
 
     assert "[System] All actors completed!" in output
     assert "[System] All workers completed! Total actors spawned: 7" in output

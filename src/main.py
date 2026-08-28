@@ -32,7 +32,9 @@ for _ in range(_num_cores):
 class Actor:
     """An actor with its own subinterpreter, mailbox, and state."""
 
-    def __init__(self, script_path, actor_id, run_id, from_subinterps_queue, interp=None):
+    def __init__(
+        self, script_path, actor_id, run_id, from_subinterps_queue, interp=None
+    ):
         self.id = actor_id
         self.run_id = run_id
         self.script_path = script_path
@@ -49,7 +51,7 @@ class Actor:
         self.interp.prepare_main(
             from_subinterps_queue=self.from_subinterps_queue,
             mailbox_queue=self.mailbox_queue,
-            status_queue=self.status_queue
+            status_queue=self.status_queue,
         )
 
         bootstrap_code = f"""
@@ -212,8 +214,7 @@ for name in names_to_delete:
         return self.interp
 
     def destroy(self):
-        """Destroy this actor's subinterpreter.
-        """
+        """Destroy this actor's subinterpreter."""
         try:
             self.interp.close()
         except Exception as e:
@@ -223,7 +224,15 @@ for name in names_to_delete:
         return f"Actor({self.id}, {self.script_path})"
 
 
-def worker(work_queue, worker_id, all_actors, interp_pool, spawn_requests, from_subinterps_queue, next_actor_id):
+def worker(
+    work_queue,
+    worker_id,
+    all_actors,
+    interp_pool,
+    spawn_requests,
+    from_subinterps_queue,
+    next_actor_id,
+):
     """Worker thread that executes actors from the work queue.
 
     Args:
@@ -270,7 +279,16 @@ def worker(work_queue, worker_id, all_actors, interp_pool, spawn_requests, from_
             actor.state = "dead"
 
 
-def process_one_signal(subsignal, all_actors, work_queue, spawn_requests, pending_messages, from_subinterps_queue, next_actor_id, interp_pool):
+def process_one_signal(
+    subsignal,
+    all_actors,
+    work_queue,
+    spawn_requests,
+    pending_messages,
+    from_subinterps_queue,
+    next_actor_id,
+    interp_pool,
+):
     """Process a single signal from a subinterpreter.
 
     Returns:
@@ -301,7 +319,9 @@ def process_one_signal(subsignal, all_actors, work_queue, spawn_requests, pendin
         payload_parts = payload.split(":", 1)
         request_id, script_path = payload_parts[0], payload_parts[1]
 
-        print(f"[{timestamp()}] [System] Processing SPAWN from actor {actor_id}: {script_path}")
+        print(
+            f"[{timestamp()}] [System] Processing SPAWN from actor {actor_id}: {script_path}"
+        )
         print(f"[{timestamp()}] [System] SPAWN request_id: {request_id[:8]}...")
 
         parent_actor = all_actors.get(actor_id)
@@ -314,34 +334,54 @@ def process_one_signal(subsignal, all_actors, work_queue, spawn_requests, pendin
 
         try:
             interp = interp_pool.get_nowait()
-            print(f"[{timestamp()}] [System] Reusing interpreter from pool for actor {new_actor_id}")
-            new_actor = Actor(script_path, new_actor_id, parent_actor.run_id, from_subinterps_queue, interp)
+            print(
+                f"[{timestamp()}] [System] Reusing interpreter from pool for actor {new_actor_id}"
+            )
+            new_actor = Actor(
+                script_path,
+                new_actor_id,
+                parent_actor.run_id,
+                from_subinterps_queue,
+                interp,
+            )
         except Exception:
-            new_actor = Actor(script_path, new_actor_id, parent_actor.run_id, from_subinterps_queue)
+            new_actor = Actor(
+                script_path, new_actor_id, parent_actor.run_id, from_subinterps_queue
+            )
 
         all_actors[new_actor.id] = new_actor
         work_queue.put(new_actor)
 
         spawn_requests[request_id] = new_actor.id
-        print(f"[{timestamp()}] [System] Registered request_id {request_id[:8]}... → actor {new_actor.id}")
+        print(
+            f"[{timestamp()}] [System] Registered request_id {request_id[:8]}... → actor {new_actor.id}"
+        )
 
         if request_id in pending_messages:
             messages = pending_messages.pop(request_id)
-            print(f"[{timestamp()}] [System] Delivering {len(messages)} pending messages to actor {new_actor.id}")
+            print(
+                f"[{timestamp()}] [System] Delivering {len(messages)} pending messages to actor {new_actor.id}"
+            )
             for json_msg in messages:
                 new_actor.mailbox_queue.put(json_msg)
 
-        print(f"[{timestamp()}] [System] Spawned {new_actor} (parent was actor {actor_id})")
+        print(
+            f"[{timestamp()}] [System] Spawned {new_actor} (parent was actor {actor_id})"
+        )
 
     elif action == "CAST":
         payload_parts = payload.split(":", 1)
         request_id, json_msg = payload_parts[0], payload_parts[1]
 
-        print(f"[{timestamp()}] [System] CAST from actor {actor_id} with request_id: {request_id[:8]}...")
+        print(
+            f"[{timestamp()}] [System] CAST from actor {actor_id} with request_id: {request_id[:8]}..."
+        )
 
         target_id = spawn_requests.get(request_id)
         if target_id is None:
-            print(f"[{timestamp()}] [System] Actor not yet created for request_id {request_id[:8]}..., queueing message")
+            print(
+                f"[{timestamp()}] [System] Actor not yet created for request_id {request_id[:8]}..., queueing message"
+            )
             if request_id not in pending_messages:
                 pending_messages[request_id] = []
             pending_messages[request_id].append(json_msg)
@@ -360,12 +400,22 @@ def process_one_signal(subsignal, all_actors, work_queue, spawn_requests, pendin
         elif target.state == "ready" or target.state == "running":
             pass
         elif target.state == "dead":
-            print(f"[{timestamp()}] [System] WARNING: Message delivered to dead actor {target_id}")
+            print(
+                f"[{timestamp()}] [System] WARNING: Message delivered to dead actor {target_id}"
+            )
 
     return (True, actor_id if is_dead else None)
 
 
-def signal_processor(all_actors, work_queue, spawn_requests, pending_messages, from_subinterps_queue, next_actor_id, interp_pool):
+def signal_processor(
+    all_actors,
+    work_queue,
+    spawn_requests,
+    pending_messages,
+    from_subinterps_queue,
+    next_actor_id,
+    interp_pool,
+):
     """Process signals from subinterpreters.
 
     Args:
@@ -384,16 +434,22 @@ def signal_processor(all_actors, work_queue, spawn_requests, pending_messages, f
             subsignal = from_subinterps_queue.get_nowait()
         except interpreters.QueueEmpty:
             if dead_actors_pending_cleanup:
-                print(f"[{timestamp()}] [System] Processing deferred cleanup for {len(dead_actors_pending_cleanup)} actors")
+                print(
+                    f"[{timestamp()}] [System] Processing deferred cleanup for {len(dead_actors_pending_cleanup)} actors"
+                )
                 for actor_id in dead_actors_pending_cleanup:
                     actor = all_actors.get(actor_id)
                     if actor:
                         try:
                             interp = actor.cleanup_namespace()
                             interp_pool.put(interp)
-                            print(f"[{timestamp()}] [System] Cleaned up {actor} and returned to pool")
+                            print(
+                                f"[{timestamp()}] [System] Cleaned up {actor} and returned to pool"
+                            )
                         except Exception as e:
-                            print(f"[{timestamp()}] [System] Error cleaning {actor} for reuse: {e}")
+                            print(
+                                f"[{timestamp()}] [System] Error cleaning {actor} for reuse: {e}"
+                            )
                             actor.destroy()
                 dead_actors_pending_cleanup.clear()
 
@@ -401,8 +457,14 @@ def signal_processor(all_actors, work_queue, spawn_requests, pending_messages, f
             continue
 
         should_continue, dead_actor_id = process_one_signal(
-            subsignal, all_actors, work_queue, spawn_requests, pending_messages,
-            from_subinterps_queue, next_actor_id, interp_pool
+            subsignal,
+            all_actors,
+            work_queue,
+            spawn_requests,
+            pending_messages,
+            from_subinterps_queue,
+            next_actor_id,
+            interp_pool,
         )
 
         if not should_continue:
@@ -423,6 +485,7 @@ def main(argv=None, timeout=None):
         argv = sys.argv
 
     if timeout is not None:
+
         def timeout_handler(signum, frame):
             raise TimeoutError(f"Execution exceeded {timeout} seconds timeout")
 
@@ -446,7 +509,9 @@ def main(argv=None, timeout=None):
         sys.exit(1)
 
     run_id = str(uuid.uuid4())  # Unique ID for this run to isolate between test runs
-    from_subinterps_queue = interpreters.create_queue()  # Queue for signals from subinterpreters
+    from_subinterps_queue = (
+        interpreters.create_queue()
+    )  # Queue for signals from subinterpreters
     next_actor_id = [0]  # Mutable list so signal_processor can increment it
 
     # Setup
@@ -463,8 +528,16 @@ def main(argv=None, timeout=None):
     # Start signal processor thread
     signal_thread = threading.Thread(
         target=signal_processor,
-        args=(all_actors, work_queue, spawn_requests, pending_messages, from_subinterps_queue, next_actor_id, _global_interp_pool),
-        daemon=False
+        args=(
+            all_actors,
+            work_queue,
+            spawn_requests,
+            pending_messages,
+            from_subinterps_queue,
+            next_actor_id,
+            _global_interp_pool,
+        ),
+        daemon=False,
     )
     signal_thread.start()
 
@@ -473,8 +546,16 @@ def main(argv=None, timeout=None):
     for i in range(num_workers):
         t = threading.Thread(
             target=worker,
-            args=(work_queue, i, all_actors, _global_interp_pool, spawn_requests, from_subinterps_queue, next_actor_id),
-            daemon=False
+            args=(
+                work_queue,
+                i,
+                all_actors,
+                _global_interp_pool,
+                spawn_requests,
+                from_subinterps_queue,
+                next_actor_id,
+            ),
+            daemon=False,
         )
         t.start()
         threads.append(t)
@@ -509,8 +590,14 @@ def main(argv=None, timeout=None):
 
         # Debug: print non-dead actors every 200 iterations (2 seconds)
         if iterations % 200 == 0:
-            non_dead = [(actor.id, actor.state) for actor in all_actors.values() if actor.state != "dead"]
-            print(f"[{timestamp()}] [System] Still waiting... Non-dead actors: {non_dead}, queue_empty: {queue_empty}")
+            non_dead = [
+                (actor.id, actor.state)
+                for actor in all_actors.values()
+                if actor.state != "dead"
+            ]
+            print(
+                f"[{timestamp()}] [System] Still waiting... Non-dead actors: {non_dead}, queue_empty: {queue_empty}"
+            )
 
     print(f"[{timestamp()}] [System] All actors completed!")
 
@@ -546,8 +633,12 @@ def main(argv=None, timeout=None):
     for t in threads:
         t.join()
 
-    print(f"\n[{timestamp()}] [System] All workers completed! Total actors spawned: {len(all_actors)}")
-    print(f"[{timestamp()}] [System] Interpreter pool size: {_global_interp_pool.qsize()}")
+    print(
+        f"\n[{timestamp()}] [System] All workers completed! Total actors spawned: {len(all_actors)}"
+    )
+    print(
+        f"[{timestamp()}] [System] Interpreter pool size: {_global_interp_pool.qsize()}"
+    )
 
     # Now clean up all actors (destroy subinterpreters and queues)
     print(f"[{timestamp()}] [System] Cleaning up actors...")

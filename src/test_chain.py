@@ -29,7 +29,9 @@ def test_chain_three_actors(capsys):
     assert "LEAF finished" in output
 
     assert "Starting actor system" in output
-    assert "Spawning initial parent actor: examples/chain/actor_root_chain.pya" in output
+    assert (
+        "Spawning initial parent actor: examples/chain/actor_root_chain.pya" in output
+    )
 
     assert "[System] Processing SPAWN from actor" in output
     assert "actor_branch_recv.pya" in output
